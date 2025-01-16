@@ -3574,7 +3574,7 @@ wheels = [
 [[package]]
 name = "nomad-age"
 version = "0.1.0"
-source = { git = "https://github.com/exp4-age/nomad-age.git?rev=dcbefb1b09d83668cb798e97287cdd93ff6f4c14#dcbefb1b09d83668cb798e97287cdd93ff6f4c14" }
+source = { git = "https://github.com/exp4-age/nomad-age.git?rev=8725462432f7be8dc9bb156e4b20fc9eddea56db#8725462432f7be8dc9bb156e4b20fc9eddea56db" }
 dependencies = [
     { name = "evaluix" },
     { name = "nomad-lab" },
@@ -3616,7 +3616,7 @@ requires-dist = [
     { name = "eelsdbconverter", marker = "extra == 'plugins'", git = "https://github.com/nomad-coe/nomad-parser-eelsdb.git?rev=entry-point" },
     { name = "evaluix", marker = "extra == 'jupyter'" },
     { name = "h5py", marker = "extra == 'jupyter'" },
-    { name = "nomad-age", marker = "extra == 'plugins'", git = "https://github.com/exp4-age/nomad-age.git?rev=dcbefb1b09d83668cb798e97287cdd93ff6f4c14#dcbefb1b09d83668cb798e97287cdd93ff6f4c14" },
+    { name = "nomad-age", marker = "extra == 'plugins'", git = "https://github.com/exp4-age/nomad-age.git?rev=8725462432f7be8dc9bb156e4b20fc9eddea56db#8725462432f7be8dc9bb156e4b20fc9eddea56db" },
     { name = "nomad-aitoolkit", marker = "extra == 'plugins'", git = "https://github.com/FAIRmat-NFDI/nomad-aitoolkit.git?rev=b203f8eb28dc4b6771a39d5c5b7ad3d9d8583ac8#b203f8eb28dc4b6771a39d5c5b7ad3d9d8583ac8" },
     { name = "nomad-lab", extras = ["parsing", "infrastructure"], specifier = ">=1.3.4" },
     { name = "nomad-lab", extras = ["parsing", "infrastructure", "dev"], marker = "extra == 'dev'", specifier = ">=1.3.4" },
