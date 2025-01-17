@@ -25,7 +25,7 @@ plugins = [
   "pynxtools[convert]==0.5.0",
   "nomad-schema-plugin-run>=1.0.1",
   "eelsdbconverter @ git+https://github.com/nomad-coe/nomad-parser-eelsdb.git@entry-point",
-  "nomad-age @ git+https://github.com/exp4-age/nomad-age.git@9f657a320720a25467e4cca3cadce8dcc3ccf855"
+  "nomad-age @ git+https://github.com/exp4-age/nomad-age.git@2fbd4d71b5611fe66961f94900ee7ee03c28f3b5"
 ]
 jupyter = ["evaluix", "trackpy", "h5py"]
 dev = ["nomad-lab[parsing, infrastructure, dev]>=1.3.4"]
