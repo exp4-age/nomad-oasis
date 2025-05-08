@@ -174,7 +174,7 @@ VOLUME /app/.volumes/fs
 
 
 <<<<<<< HEAD
-FROM jupyter/datascience-notebook:lab-3.6.2 AS jupyter
+FROM jupyter/datascience-notebook:lab-4.0.7 AS jupyter
 =======
 FROM quay.io/jupyter/base-notebook:${JUPYTER_VERSION} AS jupyter_builder
 
