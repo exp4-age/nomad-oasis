@@ -68,7 +68,7 @@ jobs:
           git add uv.lock
           if [[ `git status --porcelain` ]]; then
             git commit -m "Update lockfile"
-            git push origin -o ci.skip # prevent triggering the pipeline again
+            git push origin #-o ci.skip # prevent triggering the pipeline again
           fi
 
   # Job 2: Run unit tests for all of the plugin
