@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -3746,7 +3746,7 @@ wheels = [
 
 [[package]]
 name = "trackpy"
-version = "0.6.4"
+version = "0.7"
 source = { registry = "https://gitlab.mpcdf.mpg.de/api/v4/projects/2187/packages/pypi/simple" }
 dependencies = [
     { name = "looseversion" },
@@ -3756,7 +3756,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fa/bd/5fd56d1372c977223eb6d76137b1eeaa0a89e0b6682cabdaf8d1ef54795e/trackpy-0.6.4.tar.gz", hash = "sha256:27edfef78628ce51378499852219f2c66352af08195c72742d4bd4d9a2f93024", size = 132657, upload-time = "2024-07-10T20:03:04.733Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/11/280cd2c9b0a54577fc2dd491bda5725c5c3a9f856ef068cf030af9c357de/trackpy-0.7.tar.gz", hash = "sha256:7c67af8d5242323f4469a3e0157146b42f82be9ae640c4bbff0a8a5888928818", size = 133484, upload-time = "2025-07-18T10:49:32.836Z" }
 
 [[package]]
 name = "traitlets"
