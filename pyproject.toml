@@ -20,8 +20,7 @@ dynamic = ["version"]
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-dependencies = ["nomad-lab[parsing, infrastructure]==1.4.2", "setuptools"]
-
+dependencies = ["nomad-lab[parsing, infrastructure]==1.4.3", "setuptools"]
 
 [project.urls]
 repository = "https://github.com/exp4-age/nomad-oasis"
@@ -36,14 +35,14 @@ jupyter = ["jupyter-events", "evaluix", "trackpy", "h5py"]
 gpu-action = []
 cpu-action = []
 
-dev = ["nomad-lab[infrastructure, dev]==1.4.2"]
+dev = ["nomad-lab[infrastructure, dev]==1.4.3"]
 
 [tool.uv]
 extra-index-url = [
   "https://gitlab.mpcdf.mpg.de/api/v4/projects/2187/packages/pypi/simple",
 ]
 constraint-dependencies = ["hyperspy>=1.7.6"]
-prerelease = "disallow"
+prerelease = "if-necessary-or-explicit"
 
 [tool.setuptools.packages.find]
 exclude = ["gui*", "docs*", "config*"]
