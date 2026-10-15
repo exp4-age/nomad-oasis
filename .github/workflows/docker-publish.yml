@@ -10,6 +10,9 @@ on:
     branches: ["main", "develop"]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  # Nightly build with the newest nomad-age commit; stops early if nomad-age is unchanged.
+  schedule:
+    - cron: "0 2 * * *"
 
 env:
   REGISTRY: ghcr.io
@@ -34,6 +37,8 @@ jobs:
   update-lockfile:
     name: Update Python Lock File
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -49,11 +54,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      # nomad-age follows its main branch; plain `uv lock` would keep the locked commit.
       - name: Update lock file
-        run: uv lock
+        run: uv lock --upgrade-package nomad-age
 
       # Commits any changes made to the lockfile
       - name: Commit lock file changes
+        id: commit
         if: github.ref_type != 'tag'
         run: |
           git config --global user.name github-actions
@@ -62,12 +69,14 @@ jobs:
           if [[ `git status --porcelain` ]]; then
             git commit -m "Update lockfile"
             git push origin -o ci.skip # prevent triggering the pipeline again
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
   # Job 2: Run unit tests for all of the plugin
   plugin_unit_tests:
     name: Run plugin unit tests
     needs: update-lockfile
+    if: github.event_name != 'schedule' || needs.update-lockfile.outputs.changed == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -105,7 +114,8 @@ jobs:
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: update-lockfile
+    # Publish images only after the plugin tests passed.
+    needs: [update-lockfile, plugin_unit_tests]
 
     strategy:
       fail-fast: false

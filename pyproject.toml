@@ -28,7 +28,7 @@ repository = "https://github.com/exp4-age/nomad-oasis"
 [project.optional-dependencies]
 # Add your plugins to the list below.
 plugins = [
-  "nomad-age @ git+https://github.com/exp4-age/nomad-age.git@13cd7ed208aea97444d854cbd4781c205b77989d",
+  "nomad-age @ git+https://github.com/exp4-age/nomad-age.git@main",
   "nomad-north-jupyter>=0.2.6"
 ]
 jupyter = ["jupyter-events", "evaluix", "trackpy", "h5py"]

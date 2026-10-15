@@ -3471,7 +3471,7 @@ wheels = [
 [[package]]
 name = "nomad-age"
 version = "0.1.0"
-source = { git = "https://github.com/exp4-age/nomad-age.git?rev=13cd7ed208aea97444d854cbd4781c205b77989d#13cd7ed208aea97444d854cbd4781c205b77989d" }
+source = { git = "https://github.com/exp4-age/nomad-age.git?rev=main#13cd7ed208aea97444d854cbd4781c205b77989d" }
 dependencies = [
     { name = "evaluix" },
     { name = "nomad-lab" },
@@ -3509,7 +3509,7 @@ requires-dist = [
     { name = "evaluix", marker = "extra == 'jupyter'" },
     { name = "h5py", marker = "extra == 'jupyter'" },
     { name = "jupyter-events", marker = "extra == 'jupyter'" },
-    { name = "nomad-age", marker = "extra == 'plugins'", git = "https://github.com/exp4-age/nomad-age.git?rev=13cd7ed208aea97444d854cbd4781c205b77989d" },
+    { name = "nomad-age", marker = "extra == 'plugins'", git = "https://github.com/exp4-age/nomad-age.git?rev=main" },
     { name = "nomad-lab", extras = ["dev", "infrastructure"], marker = "extra == 'dev'", specifier = "==1.4.3" },
     { name = "nomad-lab", extras = ["infrastructure", "parsing"], specifier = "==1.4.3" },
     { name = "nomad-north-jupyter", marker = "extra == 'plugins'", specifier = ">=0.2.6" },
