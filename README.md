@@ -194,7 +194,7 @@ Before you can host your Oasis securely under a domain, you will have to go thro
 #### Updating the image
 Any pushes to the main branch of this repository, such as when [adding a plugin](#adding-a-plugin), will trigger a pipeline that generates a new app and jupyter image.
 
-nomad-age is not pinned to a commit: `pyproject.toml` follows its `main` branch. Every pipeline run (a push to main, the *Run workflow* button in the Actions tab, and a nightly run at 02:00 UTC) locks the newest nomad-age commit into `uv.lock`, commits the lockfile and builds new images. The nightly run stops early if nomad-age did not change, and images are only published after the plugin tests passed. The server does not update itself; deploy a new image with the steps below.
+nomad-age is not pinned to a commit: `pyproject.toml` follows its `main` branch. Every pipeline run (a push to main, the *Run workflow* button in the Actions tab, and a nightly run at 02:00 UTC) locks the newest nomad-age commit into `uv.lock`, commits the lockfile and builds new images. The nightly run stops early if nomad-age did not change, and images are only published after the plugin tests passed. The server does not update itself; deploy a new image with the steps below. If you update without shutting down, with `docker compose pull && docker compose up -d`, run `docker compose restart proxy` afterwards: nginx keeps the old address of the recreated app container and answers with 502 otherwise.
 
 1. To update your local image you need to shut down NOMAD using
 
