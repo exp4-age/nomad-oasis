@@ -3471,10 +3471,11 @@ wheels = [
 [[package]]
 name = "nomad-age"
 version = "0.1.0"
-source = { git = "https://github.com/exp4-age/nomad-age.git?rev=main#4e1a7a68516e88c812901b3a613f27bc0dcab80e" }
+source = { git = "https://github.com/exp4-age/nomad-age.git?rev=main#12d37ac514970e8d931a09ea1a3624ec5ae76c77" }
 dependencies = [
     { name = "evaluix" },
     { name = "nomad-lab" },
+    { name = "pillow" },
     { name = "python-magic-bin", marker = "sys_platform == 'win32'" },
     { name = "tables", version = "3.10.1", source = { registry = "https://gitlab.mpcdf.mpg.de/api/v4/projects/2187/packages/pypi/simple" }, marker = "python_full_version < '3.11'" },
     { name = "tables", version = "3.11.1", source = { registry = "https://gitlab.mpcdf.mpg.de/api/v4/projects/2187/packages/pypi/simple" }, marker = "python_full_version >= '3.11'" },
