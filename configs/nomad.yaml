@@ -23,11 +23,14 @@ logstash:
 
 temporal:
   enabled: true
-  # Default is 1 activity at a time (fully serial). The worker container has
-  # 2 CPUs / 4 GB; one video parse peaks at ~0.6 GB RSS, so 2 is safe.
+  # Keep processing serial. nomad-age parsers and normalizers read-modify-write
+  # each other's .archive.yaml files (e.g. share_with_tracks writes the tracks
+  # yaml that the tracks parser also writes) without a lock. With parallel
+  # activities, linked entries can lose updates or read half-written yaml.
+  # Only raise this after nomad-age serialises those writes.
   internal_worker:
-    pool_size: 2
-    max_concurrent_activities: 2
+    pool_size: 1
+    max_concurrent_activities: 1
 
 mongo:
   db_name: nomad_oasis_v1
