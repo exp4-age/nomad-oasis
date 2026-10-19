@@ -52,19 +52,21 @@ services:
     volumes:
       - mongo:/data/db
       - ./.volumes/mongo:/backup
-    command: mongod --logpath=/dev/null # --quiet
+    # CI only: log to stdout so a failing start shows up in the job log
+    command: mongod --quiet
     healthcheck:
       test:
         - "CMD"
         - "mongosh"
-        - "mongo:27017/test"
+        - "localhost:27017/test"
         - "--quiet"
         - "--eval"
         - "'db.runCommand({ping:1}).ok'"
       interval: 10s
       timeout: 10s
       retries: 30
-      start_period: 10s
+      start_period: 60s
+      start_interval: 2s
 
   keycloak:
     image: gitlab-registry.mpcdf.mpg.de/nomad-lab/nomad-test-keycloak:v1.0
