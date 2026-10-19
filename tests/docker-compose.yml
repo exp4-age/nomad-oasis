@@ -44,7 +44,10 @@ services:
   # the user data db
   mongo:
     restart: unless-stopped
-    image: mongo:8.0
+    # CI only: MongoDB 8.0 refuses to start on Linux kernel >= 6.19 (SERVER-121912),
+    # which GitHub runners are rolling out. 7.0 is not affected. Production keeps 8.0
+    # (Debian 13, kernel 6.12). Go back to 8.0 once MongoDB ships the TCMalloc fix.
+    image: mongo:7.0
     container_name: mongo
     environment:
       - MONGO_DATA_DIR=/data/db
@@ -52,19 +55,21 @@ services:
     volumes:
       - mongo:/data/db
       - ./.volumes/mongo:/backup
-    command: mongod --logpath=/dev/null # --quiet
+    # CI only: log to stdout so a failing start shows up in the job log
+    command: mongod --quiet
     healthcheck:
       test:
         - "CMD"
         - "mongosh"
-        - "mongo:27017/test"
+        - "localhost:27017/test"
         - "--quiet"
         - "--eval"
         - "'db.runCommand({ping:1}).ok'"
       interval: 10s
       timeout: 10s
       retries: 30
-      start_period: 10s
+      start_period: 60s
+      start_interval: 2s
 
   keycloak:
     image: gitlab-registry.mpcdf.mpg.de/nomad-lab/nomad-test-keycloak:v1.0

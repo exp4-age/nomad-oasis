@@ -209,13 +209,15 @@ jobs:
       - name: Start containers and check app/jupyter container health
         working-directory: tests
         run: |
-          docker compose up -d --quiet-pull --wait
           if ! docker compose up -d --quiet-pull --wait; then
             echo "Containers failed health check."
-            echo "Logs for app:"
-            docker logs app
-            echo "Logs for jupyter:"
-            docker logs jupyter
+            docker compose ps -a
+            for c in mongo elastic app jupyter; do
+              echo "::group::$c health and logs"
+              docker inspect --format '{{json .State.Health}}' "$c" || true
+              docker logs --tail 200 "$c" || true
+              echo "::endgroup::"
+            done
             exit 1
           fi
 
