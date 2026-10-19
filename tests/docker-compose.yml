@@ -44,7 +44,10 @@ services:
   # the user data db
   mongo:
     restart: unless-stopped
-    image: mongo:8.0
+    # CI only: MongoDB 8.0 refuses to start on Linux kernel >= 6.19 (SERVER-121912),
+    # which GitHub runners are rolling out. 7.0 is not affected. Production keeps 8.0
+    # (Debian 13, kernel 6.12). Go back to 8.0 once MongoDB ships the TCMalloc fix.
+    image: mongo:7.0
     container_name: mongo
     environment:
       - MONGO_DATA_DIR=/data/db
