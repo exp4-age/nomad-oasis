@@ -23,6 +23,11 @@ logstash:
 
 temporal:
   enabled: true
+  # Default is 1 activity at a time (fully serial). The worker container has
+  # 2 CPUs / 4 GB; one video parse peaks at ~0.6 GB RSS, so 2 is safe.
+  internal_worker:
+    pool_size: 2
+    max_concurrent_activities: 2
 
 mongo:
   db_name: nomad_oasis_v1
