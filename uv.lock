@@ -3471,7 +3471,7 @@ wheels = [
 [[package]]
 name = "nomad-age"
 version = "0.1.0"
-source = { git = "https://github.com/exp4-age/nomad-age.git?rev=main#744b27572506b2aa61dbd2a03d4b553f2b2ba924" }
+source = { git = "https://github.com/exp4-age/nomad-age.git?rev=main#a7df41a6471784f5918851e450769cbac0de5fef" }
 dependencies = [
     { name = "evaluix" },
     { name = "nomad-lab" },
