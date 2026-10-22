@@ -29,7 +29,8 @@ repository = "https://github.com/exp4-age/nomad-oasis"
 # Add your plugins to the list below.
 plugins = [
   "nomad-age @ git+https://github.com/exp4-age/nomad-age.git@main",
-  "nomad-north-jupyter>=0.2.6"
+  "nomad-north-jupyter>=0.2.6",
+  "nomad-gui==2.0.0",
 ]
 jupyter = ["jupyter-events", "evaluix", "trackpy", "h5py"]
 gpu-action = []
