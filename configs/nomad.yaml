@@ -1,5 +1,5 @@
 services:
-  api_host: "localhost"
+  api_host: "vm193-209.its.uni-kassel.de"
   api_port: 80
   api_base_path: "/backend"
 
