@@ -125,6 +125,18 @@ location = /backend/north {
 # that base in static responses so assets and browser routing stay below the
 # public root, regardless of the plugin configuration. As for the classical
 # GUI, upstream compression is disabled while filtering.
+# The new GUI builds absolute API URLs from services.api_host. Rewrite it to the
+# host the browser used (name or IP), so the API is always same-origin.
+location = /config.js {
+    rewrite ^ /backend/gui/v2/config.js break;
+    proxy_set_header Accept-Encoding "";
+    sub_filter '/backend/gui/v2' '';
+    sub_filter '"api_host": "vm193-209.its.uni-kassel.de"' '"api_host": "$host"';
+    sub_filter_types text/javascript application/javascript application/x-javascript;
+    sub_filter_once off;
+    proxy_pass http://nomad-app-backend;
+}
+
 location / {
     rewrite ^/(.*)$ /backend/gui/v2/$1 break;
     proxy_set_header Accept-Encoding "";
