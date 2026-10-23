@@ -144,6 +144,18 @@ location = /config.js {
     proxy_pass http://nomad-app-backend;
 }
 
+# metainfo.js is the schema list of the new GUI, generated at app start. The
+# backend sends max-age=604800, so after a deploy with new or changed schemas
+# browsers kept the old list for up to a week and failed on the new entry types
+# ("No definition for property data/figures: EntryData"). Revalidate on every
+# load; the ETag is kept, so an unchanged file is answered with 304.
+location = /metainfo.js {
+    rewrite ^ /backend/gui/v2/metainfo.js break;
+    proxy_hide_header Cache-Control;
+    add_header Cache-Control "no-cache" always;
+    proxy_pass http://nomad-app-backend;
+}
+
 location / {
     rewrite ^/(.*)$ /backend/gui/v2/$1 break;
     proxy_set_header Accept-Encoding "";
