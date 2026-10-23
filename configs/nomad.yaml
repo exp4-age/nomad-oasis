@@ -19,10 +19,10 @@ meta:
   deployment_url: "https://my-oasis.org/api"
   maintainer_email: "me@my-oasis.org"
   description: >-
-    This is the NOMAD Oasis of the AGE group (Experimental Physics IV,
-    University of Kassel): our own research database for samples,
-    measurements and analyses. Log in with your university account to see
-    the group's data and to upload your own.
+    This is the NOMAD Oasis of AG Ehresmann (University of Kassel): our own
+    research database for samples, measurements and analyses. To see the
+    group's data and upload your own, sign in with a NOMAD account (you can
+    register one on the sign-in page).
 
 logstash:
   enabled: false
