@@ -144,6 +144,14 @@ location = /config.js {
     proxy_pass http://nomad-app-backend;
 }
 
+# AGE branding: the new GUI's full logo is a bundled asset (hashed name per
+# NOMAD version); serve our AGE logo instead. Files in configs/branding.
+location ~ ^/assets/nomad_logo_full_(light|dark)-[^/]*\.svg$ {
+    alias /etc/nginx/branding/logo_full_$1.svg;
+    default_type image/svg+xml;
+    add_header Cache-Control "no-cache" always;
+}
+
 # metainfo.js is the schema list of the new GUI, generated at app start. The
 # backend sends max-age=604800, so after a deploy with new or changed schemas
 # browsers kept the old list for up to a week and failed on the new entry types
