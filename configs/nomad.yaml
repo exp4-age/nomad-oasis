@@ -18,6 +18,10 @@ meta:
   deployment: "oasis"
   deployment_url: "https://my-oasis.org/api"
   maintainer_email: "me@my-oasis.org"
+  description: >-
+    The research database of AG Ehresmann (University of Kassel) for samples,
+    measurements and analyses. Sign in with a NOMAD account to see and upload
+    data.
 
 logstash:
   enabled: false
