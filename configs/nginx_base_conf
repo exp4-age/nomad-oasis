@@ -134,6 +134,13 @@ location = /config.js {
     sub_filter '"api_host": "vm193-209.its.uni-kassel.de"' '"api_host": "$host"';
     sub_filter_types text/javascript application/javascript application/x-javascript;
     sub_filter_once off;
+    # config.js depends on the request Host and changes on redeploys; the
+    # backend sends max-age=604800, so browsers kept stale api_host values
+    # (Network Error / missing auth cookie). Always revalidate.
+    proxy_hide_header Cache-Control;
+    proxy_hide_header ETag;
+    proxy_hide_header Last-Modified;
+    add_header Cache-Control "no-store" always;
     proxy_pass http://nomad-app-backend;
 }
 
