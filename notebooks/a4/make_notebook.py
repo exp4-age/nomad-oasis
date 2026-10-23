@@ -25,19 +25,22 @@ md(r"""
 # A4 – Exchange bias before and after He-ion bombardment
 
 This notebook evaluates your L-MOKE hysteresis loops with **evaluix** (arctan fit) and
-compares the exchange bias field $H_\mathrm{EB}$ and the coercive field $H_\mathrm{C}$
-of every grid point **before** and **after** the ion bombardment, as a function of the ion dose.
+compares the exchange bias field $H_\mathrm{EB}$ of every grid point **before** ($H_\mathrm{EB,0}$)
+and **after** the ion bombardment. Main result: $H_\mathrm{EB}/H_\mathrm{EB,0}$ against the ion dose.
 
 **How to use it**
 1. Keep this notebook and `a4_eval.py` in the folder with your L-MOKE files (`*_LMOKE_*.txt`).
-2. Check the settings in the next cell, then run everything: *Run → Run All Cells*.
-3. Results (tables, figures) are written to the folder `A4_results`.
+2. Run everything once: *Run → Run All Cells*. This creates `doses.csv` with all grid points found.
+3. Open `doses.csv` and write the dose of every point from your lab notes (ions/cm², e.g. `9e14`;
+   `0` for points you did not bombard). Then run all cells again.
+4. Results (tables, figures) are written to the folder `A4_results`.
 
 **What the files must contain** (set in the L-MOKE software when measuring)
 - `State`: `after IB` for the measurements after the bombardment, anything else before
   (e.g. `after FC`, `as made`).
-- `Comment`: the grid point, e.g. `B3` or `07/19`; after the bombardment optionally the dose,
-  e.g. `07/19 AP 9e14` (ions/cm²). Files without a point label (e.g. `test`) are skipped.
+- `Comment`: the grid point, e.g. `B3` or `07/19` (same label before and after!). A dose written
+  in the comment (e.g. `07/19 AP 9e14`) is used if `doses.csv` has none for that point.
+  Files without a point label (e.g. `test`) are skipped.
 
 All fields are in kA/m. $H_\mathrm{EB}$ is the loop centre, $H_\mathrm{C}$ half the loop width.
 """)
@@ -51,9 +54,7 @@ REPEATS = 'last'           # point measured several times: 'last' = newest loop,
 METHOD = 'arctan'          # 'arctan' (evaluix fit) or 'linear' (zero crossings)
 R2_MIN = 0.99              # fits below this are listed for checking
 
-# Ion dose per grid point in ions/cm^2. Only needed if the dose is NOT in the file comments
-# (doses given here win over the comments). Example: DOSES = {'B1': 1e14, 'B2': 2e14}
-DOSES = {}
+DOSE_FILE = 'doses.csv'    # grid point -> dose table (created empty on the first run)
 """)
 
 code(r"""
@@ -96,7 +97,7 @@ results[['file', 'phase', 'point', 'HEB', 'dHEB', 'HC', 'dHC', 'r_squared', 'err
 
 md(r"""
 **Loops to check.** A low $R^2$ often means a *double loop*: only part of the laser spot sits on the
-bombarded area, or the point is in the middle of the transition. Look at these loops in section 4
+bombarded area, or the point is in the middle of the transition. Look at these loops in section 5
 and decide whether to re-measure or exclude them.
 """)
 
@@ -112,20 +113,45 @@ md(r"""
 """)
 
 code(r"""
-comparison = a4.compare(results, doses=DOSES, repeats=REPEATS)
+import os
+if not os.path.exists(DOSE_FILE):
+    a4.dose_template(results, DOSE_FILE)
+    print(f'Created {DOSE_FILE}: fill in the doses from your notes and run all cells again.')
+doses = {p: d for p, d in a4.read_doses(DOSE_FILE).items() if d == d}  # skip empty lines
+print(f'{len(doses)} doses from {DOSE_FILE}')
+comparison = a4.compare(results, doses=doses, repeats=REPEATS)
 missing = comparison[comparison['HEB_before'].isna() | comparison['HEB_after'].isna()].index.tolist()
 if missing:
     print('Points without a loop before AND after:', missing)
 if comparison['dose'].isna().all():
-    print('No doses found: fill in DOSES in the settings cell to plot against the dose.')
-comparison[['dose', 'HEB_before', 'dHEB_before', 'HEB_after', 'dHEB_after', 'dHEB_shift',
-            'd_dHEB_shift', 'HEB_ratio', 'HC_before', 'HC_after', 'n_before', 'n_after']].round(3)
+    print(f'No doses yet: fill in {DOSE_FILE}. Until then the plots are per grid point.')
+comparison[['dose', 'HEB_before', 'dHEB_before', 'HEB_after', 'dHEB_after', 'HEB_ratio', 'dHEB_ratio',
+            'dHEB_shift', 'HC_before', 'HC_after', 'n_before', 'n_after']].round(3)
 """)
 
-md("## 4. Plots")
+md(r"""
+## 4. Main result: $H_\mathrm{EB}/H_\mathrm{EB,0}$
+
+1 = unchanged, < 1 = exchange bias reduced, 0 = vanished, < 0 = reversed.
+The error is propagated from the fit uncertainties of both loops.
+""")
 
 code(r"""
 figures = {}
+has_dose = comparison['dose'].notna().any()
+fig, ax = plt.subplots(figsize=(7, 4.5))
+if has_dose:
+    a4.plot_ratio_vs_dose(comparison, ax=ax)
+else:
+    a4.plot_ratio_by_point(comparison, ax=ax)
+ax.set_title('Exchange bias after / before ion bombardment')
+fig.tight_layout()
+figures['HEB_ratio'] = fig
+""")
+
+md("## 5. Further plots: absolute values")
+
+code(r"""
 has_dose = comparison['dose'].notna().any()
 fig, axes = plt.subplots(1, 3, figsize=(17, 4.5))
 if has_dose:
@@ -154,7 +180,7 @@ code(r"""
 a4.plot_point(results, curves, comparison.index[0]);
 """)
 
-md("## 5. Save the results")
+md("## 6. Save the results")
 
 code(r"""
 try:

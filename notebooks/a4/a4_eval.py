@@ -289,6 +289,10 @@ def compare(
     table['dHEB_shift'] = table['HEB_after'] - table['HEB_before']
     table['d_dHEB_shift'] = np.hypot(table['dHEB_before'], table['dHEB_after'])
     table['HEB_ratio'] = table['HEB_after'] / table['HEB_before']
+    table['dHEB_ratio'] = table['HEB_ratio'].abs() * np.hypot(
+        table['dHEB_after'] / table['HEB_after'],
+        table['dHEB_before'] / table['HEB_before'],
+    )
     table['dHC_shift'] = table['HC_after'] - table['HC_before']
     table.index.name = 'point'
     return table.sort_values(['dose', 'point'], na_position='last')
@@ -432,6 +436,71 @@ def export(results, comparison, folder='A4_results', figures=None):
         fig.savefig(folder / f'{name}.png', dpi=150, bbox_inches='tight')
         fig.savefig(folder / f'{name}.pdf', bbox_inches='tight')
     return sorted(p.name for p in folder.iterdir())
+
+
+def read_doses(path):
+    """Dose table written by the students: CSV with columns point,dose
+    (ions/cm^2). Lines starting with '#' are ignored."""
+    table = pd.read_csv(path, comment='#', skipinitialspace=True, dtype={'point': str})
+    table.columns = [c.strip().lower() for c in table.columns]
+    return {str(p).strip(): float(d) for p, d in zip(table['point'], table['dose'])}
+
+
+def dose_template(results, path=None):
+    """Empty dose table with all grid points found, to fill in from the notes."""
+    points = sorted(results['point'].dropna().unique())
+    text = '# grid point, He+ dose in ions/cm^2 (0 = not bombarded)\npoint,dose\n'
+    text += ''.join(f'{p},\n' for p in points)
+    if path:
+        Path(path).write_text(text)
+    return text
+
+
+def plot_ratio_vs_dose(comparison, ax=None):
+    """Main result: HEB/HEB0 (after/before) against ion dose.
+
+    Points with dose 0 (not bombarded) cannot be shown on the log axis; their
+    mean ratio is drawn as a grey band (reference for drift and repeatability).
+    """
+    import matplotlib.pyplot as plt
+
+    if ax is None:
+        _, ax = plt.subplots(figsize=(7, 4.5))
+    data = comparison.dropna(subset=['dose', 'HEB_ratio'])
+    zero = data[data['dose'] <= 0]
+    dosed = data[data['dose'] > 0]
+    if len(zero):
+        mean = zero['HEB_ratio'].mean()
+        spread = zero['HEB_ratio'].std() if len(zero) > 1 else zero['dHEB_ratio'].iloc[0]
+        ax.axhspan(mean - spread, mean + spread, color='grey', alpha=0.25,
+                   label=f'not bombarded (n={len(zero)})')
+        ax.axhline(mean, color='grey', lw=1)
+    ax.errorbar(dosed['dose'], dosed['HEB_ratio'], yerr=dosed['dHEB_ratio'],
+                fmt='o', color='k', capsize=3, label='bombarded points')
+    ax.axhline(1, color='grey', lw=0.5, ls='--')
+    ax.axhline(0, color='grey', lw=0.5)
+    ax.set_xscale('log')
+    ax.set_xlabel('He$^+$ dose (ions/cm$^2$)')
+    ax.set_ylabel(r'$H_\mathrm{EB} / H_\mathrm{EB,0}$')
+    ax.legend()
+    return ax
+
+
+def plot_ratio_by_point(comparison, ax=None):
+    """HEB/HEB0 per grid point (as long as the doses are not entered)."""
+    import matplotlib.pyplot as plt
+
+    if ax is None:
+        _, ax = plt.subplots(figsize=(max(6, 0.35 * len(comparison)), 4))
+    x = np.arange(len(comparison))
+    ax.errorbar(x, comparison['HEB_ratio'], yerr=comparison['dHEB_ratio'],
+                fmt='o', color='k', capsize=3)
+    ax.set_xticks(x, comparison.index, rotation=90)
+    ax.set_xlabel('grid point')
+    ax.set_ylabel(r'$H_\mathrm{EB} / H_\mathrm{EB,0}$')
+    ax.axhline(1, color='grey', lw=0.5, ls='--')
+    ax.axhline(0, color='grey', lw=0.5)
+    return ax
 
 
 def plot_shift_vs_dose(comparison, ax=None):
