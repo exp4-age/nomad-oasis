@@ -88,6 +88,41 @@ class H5Video:
                 yield a, f[self.key][a : min(a + self.block, stop)]
 
 
+def upload_location(path):
+    \"\"\"(upload_id, directory in the upload) of a file under ~/uploads.\"\"\"
+    rel = Path(path).relative_to(UPLOADS)
+    folder = rel.parts[0]  # '{slugified name}-{upload_id}' or '{upload_id}'
+    upload_id = folder[-22:] if len(folder) > 22 and folder[-23] == '-' else folder
+    return upload_id, '/'.join(rel.parts[1:-1])
+
+
+def pixel_size_from_oasis(folder, stem):
+    \"\"\"Pixel size (µm/px) of the recording `stem` in the Oasis, or None.
+
+    The Oasis takes it from the objective entry of the recording.
+    \"\"\"
+    import requests
+
+    try:
+        upload_id, directory = upload_location(Path(folder) / 'x')
+        names = [f'{stem}.h5.archive.yaml', f'{stem}{TRACKS_SUFFIX}', f'{stem}.h5']
+        mainfiles = ['/'.join(filter(None, [directory, n])) for n in names]
+        r = requests.post(
+            os.environ['NOMAD_CLIENT_URL'].rstrip('/') + '/v1/entries/archive/query',
+            headers={'Authorization': f'Bearer {os.environ["NOMAD_CLIENT_ACCESS_TOKEN"]}'},
+            json=dict(owner='visible', query=dict(upload_id=upload_id, mainfile=mainfiles),
+                      required=dict(data=dict(pixel_size='*', name='*')),
+                      pagination=dict(page_size=10)),
+            timeout=30)
+        r.raise_for_status()
+        sizes = [e['archive'].get('data', {}).get('pixel_size') for e in r.json()['data']]
+        sizes = [s for s in sizes if s]
+        return float(sizes[0]) if sizes else None
+    except Exception as e:
+        print(f'pixel size of {stem} not read from the Oasis: {e!r}')
+        return None
+
+
 def find_videos():
     videos = []
     for p in sorted(UPLOADS.glob('*/**/*.h5')):
@@ -129,7 +164,8 @@ MIN_FRAMES = 10            # tp.filter_stubs: drop tracks shorter than this
 MIN_DISPLACEMENT_PX = 10   # drop tracks with |x_end - x_start| below this
 
 # velocities
-PX_TO_UM = 0.25            # µm per pixel (objective dependent!)
+PX_TO_UM = None            # µm/px; None = from the recording's objective in the
+                           # Oasis. By hand: old 20x/0.40 0.48, old 50x/0.8 0.19
 VELOCITY_WINDOW_S = 0.1    # averaging time of the velocity
 
 # run
@@ -138,6 +174,12 @@ PROCESSES = 2              # CPU cores for locating; the server is shared
 
 video = H5Video(VIDEO)
 stem = VIDEO.name[: -len('.h5')]
+if PX_TO_UM is None:
+    PX_TO_UM = pixel_size_from_oasis(VIDEO.parent, stem)
+    if PX_TO_UM is None:
+        raise SystemExit('No pixel size in the Oasis for this recording (objective '
+                         'not set, or no pixel size on it): set PX_TO_UM by hand.')
+    print(f'pixel size {PX_TO_UM} µm/px from the objective in the Oasis')
 print(f'{VIDEO.name}: {len(video)} frames of {video.shape[2]}x{video.shape[1]} px, '
       f'{video.fps:.1f} fps, {len(video) / video.fps:.1f} s')"""))
 
@@ -251,7 +293,8 @@ cells.append(md("""## 6. Velocities
 As `velocities.py`: x velocity over a window of `VELOCITY_WINDOW_S`, for the
 longest track and averaged over all tracks per frame."""))
 
-cells.append(code("""def add_velocity(df, fps, window_s=VELOCITY_WINDOW_S, px_to_um=PX_TO_UM):
+cells.append(code("""def add_velocity(df, fps, window_s=VELOCITY_WINDOW_S, px_to_um=None):
+    px_to_um = PX_TO_UM if px_to_um is None else px_to_um
     n = max(1, int(round(window_s * fps)))
     df = df.reset_index(drop=True).sort_values(['particle', 'frame']).reset_index(drop=True)
     g = df.groupby('particle')
@@ -324,9 +367,14 @@ for tf in sorted(folder.glob('*' + TRACKS_SUFFIX)):
     if 'timestamp' not in d:
         continue
     fps = 1 / np.median(np.diff(np.sort(d.timestamp.unique())))
-    d, _ = add_velocity(d, fps)
+    px = pixel_size_from_oasis(folder, name)
+    if px is None:
+        print(f'{name}: no pixel size in the Oasis, using {PX_TO_UM} µm/px')
+        px = PX_TO_UM
+    d, _ = add_velocity(d, fps, px_to_um=px)
     vt = d.groupby('frame').velocity.mean()
     rows.append(dict(recording=name, ratio=ratio_from_name(name), fps=round(fps, 1),
+                     um_per_px=px,
                      tracks=d.particle.nunique(), v_mean_um_s=vt.mean(), v_std_um_s=vt.std()))
     print(f'{name:20s} {rows[-1]["v_mean_um_s"]:8.2f} ± {rows[-1]["v_std_um_s"]:.2f} µm/s')
 
@@ -360,7 +408,8 @@ OVERWRITE = False
 
 params = dict(diameter=DIAMETER, minmass=MINMASS, invert=bool(invert),
               search_range=SEARCH_RANGE, memory=MEMORY, min_frames=MIN_FRAMES,
-              min_displacement_px=MIN_DISPLACEMENT_PX, trackpy=tp.__version__,
+              min_displacement_px=MIN_DISPLACEMENT_PX, um_per_px=PX_TO_UM,
+              trackpy=tp.__version__,
               frames=int(stop), video=VIDEO.name,
               created=time.strftime('%Y-%m-%dT%H:%M:%S%z'),
               user=os.environ.get('NOMAD_CLIENT_USER', ''))
@@ -382,15 +431,7 @@ for suffix, df in [(TRACKS_SUFFIX, trajs), (FILTERED_SUFFIX, filtered)]:
     write_tracks(df, local[suffix])
     print('saved', local[suffix])"""))
 
-cells.append(code("""def upload_location(path):
-    \"\"\"(upload_id, directory in the upload) of a file under ~/uploads.\"\"\"
-    rel = path.relative_to(UPLOADS)
-    folder = rel.parts[0]  # '{slugified name}-{upload_id}' or '{upload_id}'
-    upload_id = folder[-22:] if len(folder) > 22 and folder[-23] == '-' else folder
-    return upload_id, '/'.join(rel.parts[1:-1])
-
-
-if SAVE_TO_UPLOAD:
+cells.append(code("""if SAVE_TO_UPLOAD:
     import requests
 
     upload_id, directory = upload_location(VIDEO)
