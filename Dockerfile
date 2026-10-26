@@ -258,3 +258,6 @@ COPY --from=jupyter_builder /opt/conda /opt/conda
 # Get rid ot the following message when you open a terminal in jupyterlab:
 # groups: cannot find name for group ID 11320
 RUN touch ${HOME}/.hushlogin
+
+# Example notebooks, visible in every NORTH Jupyter next to work/ and uploads/
+COPY --chown=${NB_UID}:${NB_GID} notebooks/*.ipynb ${HOME}/examples/
