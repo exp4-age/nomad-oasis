@@ -222,6 +222,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     # Use no-install-project to skip installing the current project (`nomad-distribution`)
     uv sync --extra plugins --extra jupyter --no-install-project --inexact
 
+# conda's brotli-python 1.1.0 bundles a decoder vulnerable to CVE-2026-111497
+RUN uv pip install --python /opt/conda/bin/python "brotli>=1.2.1"
+
 
 FROM quay.io/jupyter/base-notebook:${JUPYTER_VERSION} AS jupyter
 # Fix: https://github.com/hadolint/hadolint/wiki/DL4006
@@ -244,6 +247,8 @@ RUN apt-get update \
       texlive-xetex \
       texlive-fonts-recommended \
       texlive-plain-generic \
+      # listed to pull the patched lib (CVE-2026-111497, fixed in 1.1.0-2ubuntu0.1)
+      libbrotli1 \
       # clean cache and logs
       && rm -rf /var/lib/apt/lists/* /var/log/* /var/tmp/* ~/.npm
 
