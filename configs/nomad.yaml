@@ -2,6 +2,10 @@ services:
   api_host: "vm193-209.its.uni-kassel.de"
   api_port: 80
   api_base_path: "/backend"
+  # Nikolai Weidt (weidtn) is the Oasis admin (sees/edits all uploads, no upload limit).
+  admin_user_id: "5c3793cd-28f5-419a-9847-bef27d0487fa"
+  # Max unpublished uploads per non-admin user (NOMAD default 10).
+  upload_limit: 20
 
 oasis:
   is_oasis: true
